@@ -1,0 +1,121 @@
+import random
+
+# Constants
+PLAYER_X = 'X'
+PLAYER_O = 'O'
+EMPTY = ' '
+
+# Minimax algorithm
+def minimax(board, depth, is_maximizing):
+    winner = check_winner(board)
+    if winner == PLAYER_X:
+        return 1  # Maximize player X's score
+    elif winner == PLAYER_O:
+        return -1  # Minimize player O's score
+    elif is_board_full(board):
+        return 0  # Draw
+
+    if is_maximizing:
+        best_score = -float('inf')
+        for move in get_possible_moves(board):
+            board[move] = PLAYER_X
+            score = minimax(board, depth + 1, False)
+            board[move] = EMPTY
+            best_score = max(score, best_score)
+        return best_score
+    else:
+        best_score = float('inf')
+        for move in get_possible_moves(board):
+            board[move] = PLAYER_O
+            score = minimax(board, depth + 1, True)
+            board[move] = EMPTY
+            best_score = min(score, best_score)
+        return best_score
+
+# Get possible moves on the board
+def get_possible_moves(board):
+    return [i for i in range(len(board)) if board[i] == EMPTY]
+
+# Check if the board is full
+def is_board_full(board):
+    return EMPTY not in board
+
+# Check if there is a winner
+def check_winner(board):
+    # Check rows, columns, and diagonals
+    win_conditions = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],  # Rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],  # Columns
+        [0, 4, 8], [2, 4, 6]               # Diagonals
+    ]
+    for condition in win_conditions:
+        if board[condition[0]] == board[condition[1]] == board[condition[2]] != EMPTY:
+            return board[condition[0]]
+    return None
+
+# Display the board
+def print_board(board):
+    print("\n")
+    for i in range(0, 9, 3):
+        print(f"{board[i]} | {board[i+1]} | {board[i+2]}")
+        if i < 6:
+            print("--+---+--")
+    print("\n")
+
+# AI move using Minimax
+def ai_move(board):
+    best_move = None
+    best_score = -float('inf')
+    for move in get_possible_moves(board):
+        board[move] = PLAYER_X
+        score = minimax(board, 0, False)
+        board[move] = EMPTY
+        if score > best_score:
+            best_score = score
+            best_move = move
+    return best_move
+
+# Human move
+def human_move(board):
+    move = None
+    while move not in get_possible_moves(board):
+        try:
+            move = int(input("Enter your move (0-8): "))
+        except ValueError:
+            pass
+        if move not in get_possible_moves(board):
+            print("Invalid move! Try again.")
+    return move
+
+# Main game loop
+def main():
+    board = [EMPTY] * 9  # Empty board
+    current_player = PLAYER_X  # AI starts first
+    
+    while True:
+        print_board(board)
+        
+        if current_player == PLAYER_X:
+            print("AI's turn!")
+            move = ai_move(board)
+        else:
+            print("Your turn!")
+            move = human_move(board)
+        
+        board[move] = current_player
+        
+        winner = check_winner(board)
+        if winner:
+            print_board(board)
+            print(f"Game Over! {winner} wins!")
+            break
+        elif is_board_full(board):
+            print_board(board)
+            print("It's a tie!")
+            break
+        
+        # Switch player
+        current_player = PLAYER_O if current_player == PLAYER_X else PLAYER_X
+
+if __name__ == "__main__":
+    main()
